@@ -1,1 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>KRAZY SENSI.IA</title>
 
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(180deg,#0a0014,#000);
+color:white;
+text-align:center;
+}
+
+.title{
+font-size:34px;
+margin-top:20px;
+color:#c300ff;
+text-shadow:0 0 20px #c300ff;
+cursor:pointer;
+}
+
+.box{
+background:#111;
+margin:20px;
+padding:20px;
+border-radius:15px;
+box-shadow:0 0 20px #c300ff55;
+}
+
+input,select{
+width:90%;
+padding:12px;
+margin:10px;
+border:none;
+border-radius:10px;
+background:#1a1a1a;
+color:white;
+}
+
+button{
+padding:12px 20px;
+border:none;
+border-radius:12px;
+background:#c300ff;
+color:white;
+font-weight:bold;
+cursor:pointer;
+transition:0.2s;
+}
+
+button:active{
+transform:scale(0.95);
+background:#8a00b3;
+}
+
+.hidden{display:none;}
+
+.result{
+margin-top:15px;
+background:#000;
+padding:15px;
+border-radius:10px;
+box-shadow:0 0 15px #c300ff;
+}
+
+.save{
+background:#00c853;
+margin-top:10px;
+}
+
+.copy{
+background:#2962ff;
+margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="title" onclick="clickTitulo()">KRAZY SENSI.IA</div>
+
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+<h3>Digite sua Key</h3>
+<input id="keyInput">
+<button onclick="login()">ENTRAR</button>
+<p id="msg"></p>
+</div>
+
+<!-- GERADOR -->
+<div class="box hidden" id="geradorBox">
+
+<select id="modo">
+<option value="controle">Mais Controle</option>
+<option value="balanceado">Balanceado</option>
+<option value="rapido">Muito Rápida</option>
+</select>
+
+<button onclick="gerar()">GERAR SENSI</button>
+
+<div id="resultado" class="result hidden"></div>
+
+<button class="save hidden" id="saveBtn" onclick="salvar()">SALVAR ⭐</button>
+<button class="copy hidden" id="copyBtn" onclick="copiar()">COPIAR 📋</button>
+
+</div>
+
+<!-- ADM -->
+<div class="box hidden" id="admBox">
+<h3>PAINEL ADM</h3>
+
+<input id="senhaAdm" placeholder="Senha">
+<button onclick="entrarAdm()">Entrar</button>
+
+<div id="admArea" class="hidden">
+<br>
+<button onclick="gerarNovaKey()">GERAR NOVA KEY</button>
+<button onclick="resetarKey()">RESETAR KEY</button>
+
+<p id="keyGerada"></p>
+</div>
+</div>
+
+<script>
+
+let KEY = localStorage.getItem("key") || "KRAZY123"
+let clicks = 0
+let ultimaSensi = ""
+
+// LOGIN
+function login(){
+let k = document.getElementById("keyInput").value
+
+if(k === KEY){
+localStorage.setItem("logado","1")
+mostrar()
+}else{
+document.getElementById("msg").innerHTML="Key inválida"
+}
+}
+
+if(localStorage.getItem("logado")){
+mostrar()
+}
+
+function mostrar(){
+document.getElementById("loginBox").classList.add("hidden")
+document.getElementById("geradorBox").classList.remove("hidden")
+}
+
+// GERAR
+function gerar(){
+
+let modo = document.getElementById("modo").value
+let geral
+
+if(modo=="controle") geral=rand(80,120)
+if(modo=="balanceado") geral=rand(120,160)
+if(modo=="rapido") geral=rand(185,200)
+
+let red=geral-rand(5,15)
+let x2=geral-rand(10,20)
+let x4=geral-rand(15,25)
+let awm=rand(30,60)
+let olh=geral+rand(0,5)
+
+ultimaSensi = `
+Geral: ${geral}
+Red Dot: ${red}
+2x: ${x2}
+4x: ${x4}
+AWM: ${awm}
+Olhadinha: ${olh}
+`
+
+let res=document.getElementById("resultado")
+res.innerHTML=ultimaSensi.replace(/\n/g,"<br>")
+res.classList.remove("hidden")
+
+document.getElementById("saveBtn").classList.remove("hidden")
+document.getElementById("copyBtn").classList.remove("hidden")
+}
+
+// SALVAR
+function salvar(){
+localStorage.setItem("sensi",ultimaSensi)
+alert("Salvo!")
+}
+
+// COPIAR
+function copiar(){
+navigator.clipboard.writeText(ultimaSensi)
+alert("Copiado!")
+}
+
+// ADM
+function clickTitulo(){
+clicks++
+if(clicks>=7){
+document.getElementById("admBox").classList.toggle("hidden")
+clicks=0
+}
+}
+
+function entrarAdm(){
+let s=document.getElementById("senhaAdm").value
+if(s==="krazyadm071110"){
+document.getElementById("admArea").classList.remove("hidden")
+}else{
+alert("Senha errada")
+}
+}
+
+function gerarNovaKey(){
+KEY="KRAZY"+rand(1000,9999)
+localStorage.setItem("key",KEY)
+document.getElementById("keyGerada").innerHTML="Nova Key: "+KEY
+}
+
+function resetarKey(){
+localStorage.removeItem("key")
+localStorage.removeItem("logado")
+location.reload()
+}
+
+// RANDOM
+function rand(a,b){
+return Math.floor(Math.random()*(b-a+1))+a
+}
+
+</script>
+
+</body>
+  </html>
