@@ -8,46 +8,52 @@
 body{
 margin:0;
 font-family:Arial;
-background:linear-gradient(180deg,#0a0014,#000);
+background:#05000a;
 color:white;
-text-align:center;
 }
 
-.title{
-font-size:34px;
-margin-top:20px;
+.header{
+text-align:center;
+padding:20px;
+font-size:28px;
 color:#c300ff;
 text-shadow:0 0 20px #c300ff;
 cursor:pointer;
 }
 
-.box{
-background:#111;
-margin:20px;
-padding:20px;
-border-radius:15px;
-box-shadow:0 0 20px #c300ff55;
+.container{
+padding:15px;
 }
 
-input,select{
-width:90%;
-padding:12px;
-margin:10px;
-border:none;
+.card{
+background:#111;
+padding:15px;
+border-radius:15px;
+margin-bottom:15px;
+box-shadow:0 0 20px #c300ff33;
+}
+
+select,input{
+width:100%;
+padding:10px;
+margin-top:10px;
 border-radius:10px;
+border:none;
 background:#1a1a1a;
 color:white;
 }
 
 button{
-padding:12px 20px;
+margin-top:10px;
+padding:12px;
+width:100%;
 border:none;
 border-radius:12px;
 background:#c300ff;
 color:white;
 font-weight:bold;
 cursor:pointer;
-transition:0.2s;
+transition:.2s;
 }
 
 button:active{
@@ -55,178 +61,250 @@ transform:scale(0.95);
 background:#8a00b3;
 }
 
-.hidden{display:none;}
+.tabs{
+display:flex;
+gap:10px;
+}
+
+.tab{
+flex:1;
+background:#1a1a1a;
+padding:10px;
+text-align:center;
+border-radius:10px;
+cursor:pointer;
+}
+
+.active{
+background:#c300ff;
+}
 
 .result{
-margin-top:15px;
+margin-top:10px;
 background:#000;
-padding:15px;
+padding:10px;
 border-radius:10px;
-box-shadow:0 0 15px #c300ff;
 }
 
-.save{
-background:#00c853;
-margin-top:10px;
-}
-
-.copy{
-background:#2962ff;
-margin-top:10px;
-}
-
+.hidden{display:none;}
 </style>
 </head>
 
 <body>
 
-<div class="title" onclick="clickTitulo()">KRAZY SENSI.IA</div>
+<div class="header" onclick="clickTitulo()">KRAZY SENSI.IA <span id="vip"></span></div>
+
+<div class="container">
 
 <!-- LOGIN -->
-<div class="box" id="loginBox">
-<h3>Digite sua Key</h3>
-<input id="keyInput">
-<button onclick="login()">ENTRAR</button>
+<div class="card" id="login">
+<input id="key" placeholder="Digite sua key">
+<button onclick="login()">Entrar</button>
 <p id="msg"></p>
 </div>
 
-<!-- GERADOR -->
-<div class="box hidden" id="geradorBox">
+<!-- APP -->
+<div id="app" class="hidden">
 
-<select id="modo">
-<option value="controle">Mais Controle</option>
-<option value="balanceado">Balanceado</option>
-<option value="rapido">Muito Rápida</option>
+<div class="tabs">
+<div class="tab active" onclick="abrir('gerador',this)">⚙️ Gerar</div>
+<div class="tab" onclick="abrir('salvas',this)">⭐ Salvas</div>
+<div class="tab" onclick="abrir('famosos',this)">🌟 Famosos</div>
+</div>
+
+<!-- GERADOR -->
+<div id="gerador" class="card">
+
+<select id="modo"></select>
+
+<select id="celular">
+<option>Android Fraco</option>
+<option>Android Médio</option>
+<option>Android Forte</option>
+<option>iPhone</option>
 </select>
 
-<button onclick="gerar()">GERAR SENSI</button>
+<button onclick="gerar()">GERAR</button>
 
-<div id="resultado" class="result hidden"></div>
+<div id="res" class="result hidden"></div>
 
-<button class="save hidden" id="saveBtn" onclick="salvar()">SALVAR ⭐</button>
-<button class="copy hidden" id="copyBtn" onclick="copiar()">COPIAR 📋</button>
+<button onclick="salvar()">Salvar ⭐</button>
+<button onclick="copiar()">Copiar 📋</button>
+
+</div>
+
+<!-- SALVAS -->
+<div id="salvas" class="card hidden"></div>
+
+<!-- FAMOSOS -->
+<div id="famosos" class="card hidden"></div>
 
 </div>
 
 <!-- ADM -->
-<div class="box hidden" id="admBox">
-<h3>PAINEL ADM</h3>
+<div id="adm" class="card hidden">
+<input id="senha" placeholder="Senha ADM">
+<button onclick="adm()">Entrar</button>
 
-<input id="senhaAdm" placeholder="Senha">
-<button onclick="entrarAdm()">Entrar</button>
-
-<div id="admArea" class="hidden">
-<br>
-<button onclick="gerarNovaKey()">GERAR NOVA KEY</button>
-<button onclick="resetarKey()">RESETAR KEY</button>
-
-<p id="keyGerada"></p>
+<div id="painel" class="hidden">
+<button onclick="novaNormal()">Key Normal</button>
+<button onclick="novaVIP()">Key VIP</button>
+<p id="saida"></p>
 </div>
+</div>
+
 </div>
 
 <script>
 
-let KEY = localStorage.getItem("key") || "KRAZY123"
-let clicks = 0
-let ultimaSensi = ""
+let normal = localStorage.getItem("n") || "KRAZY123"
+let vipKey = localStorage.getItem("v") || "VIP999"
+let vip=false
+let clicks=0
+let atual=""
 
 // LOGIN
 function login(){
-let k = document.getElementById("keyInput").value
+let k=document.getElementById("key").value
 
-if(k === KEY){
-localStorage.setItem("logado","1")
-mostrar()
-}else{
-document.getElementById("msg").innerHTML="Key inválida"
-}
+if(k===normal){vip=false; entrar()}
+else if(k===vipKey){vip=true; entrar()}
+else document.getElementById("msg").innerHTML="Key inválida"
 }
 
-if(localStorage.getItem("logado")){
-mostrar()
+function entrar(){
+localStorage.setItem("log",1)
+localStorage.setItem("vip",vip)
+
+if(vip) document.getElementById("vip").innerHTML="👑"
+
+document.getElementById("login").classList.add("hidden")
+document.getElementById("app").classList.remove("hidden")
+
+modos()
+carregarSalvas()
+carregarFamosos()
 }
 
-function mostrar(){
-document.getElementById("loginBox").classList.add("hidden")
-document.getElementById("geradorBox").classList.remove("hidden")
+if(localStorage.getItem("log")){
+vip=localStorage.getItem("vip")=="true"
+entrar()
+}
+
+// MODOS
+function modos(){
+let m=document.getElementById("modo")
+m.innerHTML=""
+
+add("controle")
+add("balanceado")
+add("rapido")
+if(vip) add("refinado")
+}
+
+function add(v){
+let o=document.createElement("option")
+o.value=v
+o.innerText=v
+modo.appendChild(o)
 }
 
 // GERAR
 function gerar(){
+let m=modo.value
+let base = rand(100,180)
 
-let modo = document.getElementById("modo").value
-let geral
+if(m=="controle") base=rand(80,120)
+if(m=="rapido") base=rand(185,200)
+if(m=="refinado") base=rand(140,170)
 
-if(modo=="controle") geral=rand(80,120)
-if(modo=="balanceado") geral=rand(120,160)
-if(modo=="rapido") geral=rand(185,200)
-
-let red=geral-rand(5,15)
-let x2=geral-rand(10,20)
-let x4=geral-rand(15,25)
-let awm=rand(30,60)
-let olh=geral+rand(0,5)
-
-ultimaSensi = `
-Geral: ${geral}
-Red Dot: ${red}
-2x: ${x2}
-4x: ${x4}
-AWM: ${awm}
-Olhadinha: ${olh}
+let res = `
+Geral: ${base}
+Red: ${base-10}
+2x: ${base-15}
+4x: ${base-20}
+AWM: ${rand(40,70)}
+Olhadinha: ${base+2}
 `
 
-let res=document.getElementById("resultado")
-res.innerHTML=ultimaSensi.replace(/\n/g,"<br>")
-res.classList.remove("hidden")
+atual=res
 
-document.getElementById("saveBtn").classList.remove("hidden")
-document.getElementById("copyBtn").classList.remove("hidden")
+let r=document.getElementById("res")
+r.innerHTML=res.replace(/\n/g,"<br>")
+r.classList.remove("hidden")
 }
 
 // SALVAR
 function salvar(){
-localStorage.setItem("sensi",ultimaSensi)
-alert("Salvo!")
+let lista=JSON.parse(localStorage.getItem("salvas")||"[]")
+lista.push(atual)
+localStorage.setItem("salvas",JSON.stringify(lista))
+carregarSalvas()
+}
+
+// MOSTRAR SALVAS
+function carregarSalvas(){
+let div=document.getElementById("salvas")
+let lista=JSON.parse(localStorage.getItem("salvas")||"[]")
+
+div.innerHTML=""
+lista.forEach(s=>{
+div.innerHTML+=`<div class="result">${s.replace(/\n/g,"<br>")}</div>`
+})
+}
+
+// FAMOSOS
+function carregarFamosos(){
+let f=document.getElementById("famosos")
+
+f.innerHTML=`
+<div class="result">CEROL: Geral 150 / Red 140</div>
+<div class="result">NOBRU: Geral 140 / Red 130</div>
+<div class="result">WHITE444: Geral 170</div>
+`
 }
 
 // COPIAR
 function copiar(){
-navigator.clipboard.writeText(ultimaSensi)
-alert("Copiado!")
+navigator.clipboard.writeText(atual)
+}
+
+// TABS
+function abrir(id,el){
+document.querySelectorAll(".card").forEach(c=>c.classList.add("hidden"))
+document.getElementById(id).classList.remove("hidden")
+
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"))
+el.classList.add("active")
 }
 
 // ADM
 function clickTitulo(){
 clicks++
 if(clicks>=7){
-document.getElementById("admBox").classList.toggle("hidden")
+document.getElementById("adm").classList.toggle("hidden")
 clicks=0
 }
 }
 
-function entrarAdm(){
-let s=document.getElementById("senhaAdm").value
-if(s==="krazyadm071110"){
-document.getElementById("admArea").classList.remove("hidden")
-}else{
-alert("Senha errada")
+function adm(){
+if(senha.value==="krazyadm071110"){
+painel.classList.remove("hidden")
 }
 }
 
-function gerarNovaKey(){
-KEY="KRAZY"+rand(1000,9999)
-localStorage.setItem("key",KEY)
-document.getElementById("keyGerada").innerHTML="Nova Key: "+KEY
+function novaNormal(){
+normal="KRAZY"+rand(1000,9999)
+localStorage.setItem("n",normal)
+saida.innerHTML=normal
 }
 
-function resetarKey(){
-localStorage.removeItem("key")
-localStorage.removeItem("logado")
-location.reload()
+function novaVIP(){
+vipKey="VIP"+rand(1000,9999)
+localStorage.setItem("v",vipKey)
+saida.innerHTML=vipKey
 }
 
-// RANDOM
 function rand(a,b){
 return Math.floor(Math.random()*(b-a+1))+a
 }
@@ -234,4 +312,4 @@ return Math.floor(Math.random()*(b-a+1))+a
 </script>
 
 </body>
-  </html>
+              </html>
